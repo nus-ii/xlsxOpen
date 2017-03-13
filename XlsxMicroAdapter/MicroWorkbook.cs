@@ -244,8 +244,8 @@ namespace XlsxMicroAdapter
 		{
 			Worksheet worksheet1 = new Worksheet();
 			SheetData sheetData1 = new SheetData();
-
-			foreach (var r in microSheet.Rows)
+			var rows = microSheet.Rows;
+			foreach (var r in rows)
 			{
 				Row row1 = new Row();
 
@@ -268,12 +268,8 @@ namespace XlsxMicroAdapter
 					{
 						cell1.Append(inlineString1);
 					}
-
-
 					row1.Append(cell1);
 				}
-
-				
 				sheetData1.Append(row1);
 			}
 		   

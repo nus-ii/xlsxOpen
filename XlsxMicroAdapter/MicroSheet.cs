@@ -14,17 +14,25 @@ namespace XlsxMicroAdapter
 
 		public bool Visible { get; set; }
 
-		public List<string> Rows
-		{
-			get { return RowsList; }
-		}
-
 		private List<string> RowsList;
 		private List<string> ColumnsList;
 
+		public List<string> Rows
+		{
+			get
+			{
+				FixColumnListAndRowList();
+				return RowsList;
+			}
+		}
+
 		public List<string> Columns
 		{
-			get { return ColumnsList; }
+			get
+			{
+				FixColumnListAndRowList();
+				return ColumnsList;
+			}
 		}
 
 		public Dictionary<string, string> HeadersDictionary
@@ -45,25 +53,26 @@ namespace XlsxMicroAdapter
 		public void AddCell(MicroCell newCell)
 		{
 			this.Cells.Add(newCell);
-			FixColumnListAndRowList(newCell);
+			//FixColumnListAndRowList();
 		}
 
-		private void FixColumnListAndRowList(MicroCell newCell)
+		private void FixColumnListAndRowList()
 		{
-			if (!ColumnsList.Contains(newCell.Column))
-				ColumnsList.Add(newCell.Column);
+			foreach (var cell in this.Cells)
+			{
+				if (!ColumnsList.Contains(cell.Column))
+					ColumnsList.Add(cell.Column);
 
-			if (!RowsList.Contains(newCell.Row))
-				RowsList.Add(newCell.Row);
+				if (!RowsList.Contains(cell.Row))
+					RowsList.Add(cell.Row);
+			}
+
 		}
 
 		public void AddCellList(List<MicroCell> CellList)
 		{
 			this.Cells.AddRange(CellList);
-			foreach (var cell in CellList)
-			{
-				FixColumnListAndRowList(cell);
-			}
+		    //FixColumnListAndRowList();
 		}
 
 		public List<MicroCell> GetCellsWhereRow(string row)
