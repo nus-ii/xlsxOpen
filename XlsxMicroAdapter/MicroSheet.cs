@@ -17,6 +17,8 @@ namespace XlsxMicroAdapter
 		private List<string> RowsList;
 		private List<string> ColumnsList;
 
+		public List<DataCheckInfo> CheckList;
+
 		public List<string> Rows
 		{
 			get
@@ -47,6 +49,7 @@ namespace XlsxMicroAdapter
 			this.Visible = visible;
 			this.ColumnsList=new List<string>();
 			this.RowsList=new List<string>();
+			this.CheckList=new List<DataCheckInfo>();
 
 		}
 

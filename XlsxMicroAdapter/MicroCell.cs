@@ -23,6 +23,7 @@ namespace XlsxMicroAdapter
 			this.Column = column;
 			this.ViewValue = viewValue;
 			this.FormulaValue = formula;
+
 		}
 
 		public MicroCell()

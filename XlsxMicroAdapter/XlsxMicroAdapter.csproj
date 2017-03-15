@@ -49,6 +49,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataCheckInfo.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="MicroCell.cs" />
     <Compile Include="MicroSheet.cs" />

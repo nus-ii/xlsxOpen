@@ -213,10 +213,20 @@ namespace XlsxMicroAdapter
 			throw new Exception("No visible sheet found.");
 		}
 
-		private void SetDataCheck(Worksheet ws)
+		private void SetDataCheckArray(Worksheet worksheet1, MicroSheet microSheet)
 		{
-			//Worksheet worksheet = worksheetPart1.Worksheet;
 			WorksheetExtensionList worksheetExtensionList = new WorksheetExtensionList();
+
+			foreach (var checkDataItem in microSheet.CheckList)
+			{
+				SetDataCheck(worksheet1, checkDataItem, ref worksheetExtensionList);
+			}
+			worksheet1.Append(worksheetExtensionList);
+		}
+
+		private void SetDataCheck(Worksheet ws, DataCheckInfo info, ref WorksheetExtensionList worksheetExtensionList)
+		{
+
 			WorksheetExtension worksheetExtension = new WorksheetExtension() { Uri = "{CCE6A557-97BC-4b89-ADB6-D9C93CAAB3DF}" };
 			worksheetExtension.AddNamespaceDeclaration("x14", "http://schemas.microsoft.com/office/spreadsheetml/2009/9/main");
 
@@ -224,20 +234,27 @@ namespace XlsxMicroAdapter
 			dataValidations.AddNamespaceDeclaration("xm", "http://schemas.microsoft.com/office/excel/2006/main");
 
 			//sites validation
+			string checkFormula = GetCheckFormula(info);
 			dataValidations.Append(new X14.DataValidation()
 			{
 				Type = DataValidationValues.List,
 				AllowBlank = true,
 				ShowInputMessage = true,
 				ShowErrorMessage = true,
-				DataValidationForumla1 = new X14.DataValidationForumla1() { Formula = new Excel.Formula("car_firm!$E$2:$E$61") },
-				ReferenceSequence = new Excel.ReferenceSequence("E5")
+				DataValidationForumla1 = new X14.DataValidationForumla1() { Formula = new Excel.Formula(checkFormula) },
+				ReferenceSequence = new Excel.ReferenceSequence(string.Concat(info.Target.Column,info.Target.Row))
 			});
 
 			worksheetExtension.Append(dataValidations);
 			worksheetExtensionList.Append(worksheetExtension);
-			ws.Append(worksheetExtensionList);
+			//ws.Append(worksheetExtensionList);
 			//ws.Save();
+		}
+
+		private string GetCheckFormula(DataCheckInfo info)
+		{
+			//"car_firm!$E$2:$E$61"
+			return string.Format("{0}!${3}${4}:${1}${2}",info.SourceSheetName,info.SourceTopLeft.Column,info.SourceTopLeft.Row,info.SourceBottomRight.Column,info.SourceBottomRight.Row);
 		}
 
 		private void GenerateWorksheetPart1Content(WorksheetPart worksheetPart1, MicroSheet microSheet)
@@ -275,10 +292,19 @@ namespace XlsxMicroAdapter
 		   
 			
 			worksheet1.Append(sheetData1);
-			SetDataCheck(worksheet1);
+			SetDataCheckArray(worksheet1,microSheet);
+			//SetDataCheck(worksheet1);
 			worksheetPart1.Worksheet = worksheet1;
 			
 		}
+
+		//private void SetDataCheckArray(Worksheet worksheet1, MicroSheet microSheet)
+		//{
+		//	foreach (var checkDataItem in microSheet.CheckList)
+		//	{
+		//		SetDataCheck(worksheet1,checkDataItem);
+		//	}
+		//}
 
 		private void GenerateWorkbookPart1Content(WorkbookPart workbookPart1, List<MicroSheet> sheets)
 		{
