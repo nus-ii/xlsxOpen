@@ -36,13 +36,14 @@ namespace XlsxMicroAdapter
 			var sheets = new List<MicroSheet>();
 			try
 			{
+				//var r = XlsxReader(targetStream);
+				#region MyRegion
 				using (SpreadsheetDocument doc = SpreadsheetDocument.Open(targetStream, true))
 				{
 					WorkbookPart workbookPart = doc.WorkbookPart;
+					var t = workbookPart.WorksheetParts;
 					SharedStringTablePart sstpart = workbookPart.GetPartsOfType<SharedStringTablePart>().First();
 					SharedStringTable sst = sstpart.SharedStringTable;
-
-					
 
 					List<Tuple<string, string, bool>> TupleList = new List<Tuple<string, string, bool>>();
 
@@ -74,6 +75,9 @@ namespace XlsxMicroAdapter
 					}
 				}
 				return sheets;
+				#endregion
+
+				//	return null;
 			}
 			catch (Exception e)
 			{

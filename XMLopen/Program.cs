@@ -21,7 +21,7 @@ namespace XMLopen
 				Console.Write(String.Concat(i, "-", XlsxHelper.GetColumnLetter(i), " "));
 			}
 
-			using (Stream fs = GetStream(@"C:\MyTempXls\cla.xlsx"))
+			using (Stream fs = GetStream(@"C:\MyTempXls\cla2.xlsx"))
 			{
 				var x=new XlsxReader(fs);
 				var ghjkl=x.Book.WriteSheets();
@@ -29,7 +29,13 @@ namespace XMLopen
 				CopyStream(ghjkl, @"C:\MyTempXls\cla477.xlsx");
 				ghjkl.Close();
 			}
-
+			using (Stream fs = GetStream(@"C:\MyTempXls\cla477.xlsx"))
+			{
+				var x = new XlsxReader(fs);
+				//var ghjkl = x.Book.WriteSheets();
+				//CopyStream(ghjkl, @"C:\MyTempXls\cla477.xlsx");
+				//ghjkl.Close();
+			}
 			Console.WriteLine("All done!!!");
 			Console.ReadLine();
 		}
