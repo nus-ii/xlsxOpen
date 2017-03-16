@@ -12,5 +12,18 @@ namespace XlsxMicroAdapter
 		public MicroCell SourceBottomRight;
 		public string SourceSheetName;
 		public MicroCell Target;
+
+		public DataCheckInfo()
+		{
+			
+		}
+
+		public DataCheckInfo(MicroCell top,MicroCell bottom,string source, MicroCell target)
+		{
+			this.SourceTopLeft = top;
+			this.SourceBottomRight = bottom;
+			this.SourceSheetName = source;
+			this.Target = target;
+		}
 	}
 }
