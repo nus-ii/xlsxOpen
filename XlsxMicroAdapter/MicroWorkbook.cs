@@ -37,45 +37,30 @@ namespace XlsxMicroAdapter
 			try
 			{
 				//var r = XlsxReader(targetStream);
-				#region MyRegion
+			
 				using (SpreadsheetDocument doc = SpreadsheetDocument.Open(targetStream, true))
 				{
 					WorkbookPart workbookPart = doc.WorkbookPart;
-					var t = workbookPart.WorksheetParts;
-					SharedStringTablePart sstpart = workbookPart.GetPartsOfType<SharedStringTablePart>().First();
-					SharedStringTable sst = sstpart.SharedStringTable;
-
-					List<Tuple<string, string, bool>> TupleList = new List<Tuple<string, string, bool>>();
-
-					var lists = workbookPart.Workbook.Descendants<Sheet>();
-					foreach (var l in lists)
+					//var t = workbookPart.WorksheetParts.First().Worksheet.ChildElements.FirstOrDefault(c=>c.LocalName=="sheetData").ChildElements.FirstOrDefault().ChildElements;
+					//SharedStringTablePart sstpart = new SharedStringTablePart();
+					//SharedStringTable sst = sstpart.SharedStringTable;
+					var u = workbookPart.GetPartsOfType<SharedStringTablePart>();
+					if (u != null &&u.Count() != 0)
 					{
-						bool visible = true;
-						if (l.State != null)
-							visible = SheetStateValues.Visible == l.State.Value;
-
-						var tempTuple = new Tuple<string, string, bool>(l.Id, l.Name, visible);
-						TupleList.Add(tempTuple);
+						SharedStringTablePart sstpart = workbookPart.GetPartsOfType<SharedStringTablePart>().First();
+						SharedStringTable sst = sstpart.SharedStringTable;
+						GetValue(workbookPart, sst, sheets,true);
 					}
-
-					foreach (var idNamePair in TupleList)
+					else
 					{
-						var worksheetPart = workbookPart.GetPartById(idNamePair.Item1) as WorksheetPart;
-
-						var activSheet = new MicroSheet(idNamePair.Item2, idNamePair.Item3);
-						var sheet = worksheetPart.Worksheet;
-						var cells = sheet.Descendants<Cell>();
-
-						foreach (var cell in cells)
-						{
-							var activeCell = CellRead(cell, sst);
-							activSheet.AddCell(activeCell);
-						}
-						sheets.Add(activSheet);
+						SharedStringTable sst = new SharedStringTable();
+						GetValue(workbookPart, sst, sheets, false);
 					}
+					//SharedStringTable sst = new SharedStringTable();
+					
 				}
 				return sheets;
-				#endregion
+		
 
 				//	return null;
 			}
@@ -86,7 +71,39 @@ namespace XlsxMicroAdapter
 			}
 		}
 
-		private static MicroCell CellRead(Cell cell, SharedStringTable sst)
+		private static void GetValue(WorkbookPart workbookPart, SharedStringTable sst, List<MicroSheet> sheets, bool useShared)
+		{
+			List<Tuple<string, string, bool>> TupleList = new List<Tuple<string, string, bool>>();
+
+			var lists = workbookPart.Workbook.Descendants<Sheet>();
+			foreach (var l in lists)
+			{
+				bool visible = true;
+				if (l.State != null)
+					visible = SheetStateValues.Visible == l.State.Value;
+
+				var tempTuple = new Tuple<string, string, bool>(l.Id, l.Name, visible);
+				TupleList.Add(tempTuple);
+			}
+
+			foreach (var idNamePair in TupleList)
+			{
+				var worksheetPart = workbookPart.GetPartById(idNamePair.Item1) as WorksheetPart;
+
+				var activSheet = new MicroSheet(idNamePair.Item2, idNamePair.Item3);
+				var sheet = worksheetPart.Worksheet;
+				var cells = sheet.Descendants<Cell>();
+
+				foreach (var cell in cells)
+				{
+					var activeCell = CellRead(cell, sst,useShared);
+					activSheet.AddCell(activeCell);
+				}
+				sheets.Add(activSheet);
+			}
+		}
+
+		private static MicroCell CellRead(Cell cell, SharedStringTable sst, bool useShared)
 		{
 			MicroCell result = new MicroCell();
 			result.Row = cell.CellReference.Value.GetInt().ToString();
@@ -94,14 +111,15 @@ namespace XlsxMicroAdapter
 
 			if ((cell.DataType != null) && (cell.DataType == CellValues.SharedString))
 			{
-				int ssid = int.Parse(cell.CellValue.Text);
-				//result.FormulaValue = cell.CellFormula?.Text;
+	
 				if (cell.CellFormula==null)
 				{
+					int ssid = int.Parse(cell.CellValue.Text);
+					result.FormulaValue = cell.CellFormula?.Text;
 					string str = sst.ChildElements[ssid]?.InnerText ?? "";
 					//TODO: Болше проверок на null
 
-					result.ViewValue = str;
+					result.ViewValue = str; //str;
 				}
 				else
 				{
@@ -114,7 +132,11 @@ namespace XlsxMicroAdapter
 				if (string.IsNullOrEmpty(cell.CellFormula?.Text))
 				{
 					if(!string.IsNullOrEmpty(cell.CellValue?.Text))
-					result.ViewValue = cell.CellValue.Text;
+					{ result.ViewValue = cell.CellValue.Text;}
+					else
+					{
+						result.ViewValue = cell.InnerText;
+					}
 				}
 				else
 				{ result.FormulaValue = cell.CellFormula?.Text;}

@@ -47,7 +47,18 @@ namespace XMLopen
 				var x = new XlsxReader(fs);
 				var ghjkl = x.Book.WriteSheets();
 
-				CopyStream(ghjkl, @"C:\MyTempXls\cla477.xlsx");
+				CopyStream(ghjkl, @"C:\MyTempXls\momo.xlsx");
+				ghjkl.Close();
+			}
+
+			Console.WriteLine("You can edit momo");
+			Console.ReadLine();
+			using (Stream fs = GetStream(@"C:\MyTempXls\momo.xlsx"))
+			{
+				var x = new XlsxReader(fs);
+				var ghjkl = x.Book.WriteSheets();
+
+				CopyStream(ghjkl, @"C:\MyTempXls\momo2.xlsx");
 				ghjkl.Close();
 			}
 			Console.ReadLine();
@@ -78,14 +89,17 @@ namespace XMLopen
 			var q = new MicroCell("1", "A", "testA");
 			var w = new MicroCell("2", "A", "testA");
 			var e = new MicroCell("3", "A", "testA");
+			var r = new MicroCell("4", "A", "20","=5*4");
 			a.AddCell(q);
 			a.AddCell(w);
 			a.AddCell(e);
+			a.AddCell(r);
+			result.Sheets.Add(a);
 
-			a.CheckList.Add(new DataCheckInfo(qq,ee,"s",q));
+			a.CheckList.Add(new DataCheckInfo(qq, ee, "s", q));
 			a.CheckList.Add(new DataCheckInfo(qq, ee, "s", w));
 			a.CheckList.Add(new DataCheckInfo(qq, ee, "s", e));
-			result.Sheets.Add(a);
+
 			return result;
 		}
 
