@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace XlsxMicroAdapter
 {
@@ -10,7 +11,7 @@ namespace XlsxMicroAdapter
 	{
 		public string Name { get; set; }
 
-		private List<MicroCell> Cells { get; set; }
+		private Dictionary<string,MicroCell> Cells { get; set; }
 
 		public bool Visible { get; set; }
 
@@ -45,7 +46,7 @@ namespace XlsxMicroAdapter
 		public MicroSheet(string name = "", bool visible = true)
 		{
 			this.Name = name;
-			this.Cells = new List<MicroCell>();
+			this.Cells = new Dictionary<string, MicroCell>();
 			this.Visible = visible;
 			this.ColumnsList=new List<string>();
 			this.RowsList=new List<string>();
@@ -55,37 +56,52 @@ namespace XlsxMicroAdapter
 
 		public void AddCell(MicroCell newCell)
 		{
-			this.Cells.Add(newCell);
-			//FixColumnListAndRowList();
+			this.Cells.Add(string.Concat(newCell.Column,newCell.Row),newCell);
 		}
 
 		private void FixColumnListAndRowList()
 		{
 			foreach (var cell in this.Cells)
 			{
-				if (!ColumnsList.Contains(cell.Column))
-					ColumnsList.Add(cell.Column);
+				if (!ColumnsList.Contains(cell.Value.Column))
+					ColumnsList.Add(cell.Value.Column);
 
-				if (!RowsList.Contains(cell.Row))
-					RowsList.Add(cell.Row);
+				if (!RowsList.Contains(cell.Value.Row))
+					RowsList.Add(cell.Value.Row);
 			}
 
 		}
 
 		public void AddCellList(List<MicroCell> CellList)
 		{
-			this.Cells.AddRange(CellList);
-		    //FixColumnListAndRowList();
+			foreach (var cell in CellList)
+			{
+				this.AddCell(cell);
+			}
 		}
 
 		public List<MicroCell> GetCellsWhereRow(string row)
 		{
-			return this.Cells.Where(c => c.Row == row).ToList();
+			List<MicroCell> result=new List<MicroCell>();
+			var preResult=this.Cells.Where(c => c.Value.Row == row).ToList();
+
+			foreach (var cell in preResult)
+			{
+				result.Add(cell.Value);
+			}
+			return result;
+
 		}
 
 		public List<MicroCell> GetCellsWhereColumn(string column)
 		{
-			return this.Cells.Where(c => c.Column == column).ToList();
+			List<MicroCell> result = new List<MicroCell>();
+			var preResult=this.Cells.Where(c => c.Value.Column == column).ToList();
+			foreach (var cell in preResult)
+			{
+				result.Add(cell.Value);
+			}
+			return result;
 		}
 
 		public List<string> GetColumns()
@@ -93,8 +109,8 @@ namespace XlsxMicroAdapter
 			var result = new List<string>();
 			foreach (var cell in Cells)
 			{
-				if (result.Count == 0 || !result.Contains(cell.Column))
-					result.Add(cell.Column);
+				if (result.Count == 0 || !result.Contains(cell.Value.Column))
+					result.Add(cell.Value.Column);
 			}
 			return result;
 		}
@@ -104,8 +120,8 @@ namespace XlsxMicroAdapter
 			var result = new List<string>();
 			foreach (var cell in Cells)
 			{
-				if (result.Count == 0 || !result.Contains(cell.Row))
-					result.Add(cell.Row);
+				if (result.Count == 0 || !result.Contains(cell.Value.Row))
+					result.Add(cell.Value.Row);
 			}
 			return result;
 		}
@@ -118,7 +134,10 @@ namespace XlsxMicroAdapter
 		/// <returns></returns>
 		public MicroCell GetCell(string row, string column)
 		{
-			return Cells.FirstOrDefault(c => c.Row == row && c.Column == column);
+			string adress = string.Concat(column, row);
+			MicroCell result=new MicroCell();
+			Cells.TryGetValue(adress, out result);
+			return result;
 		}
 
 		private Dictionary<string, string> GetHeadersDictionary()

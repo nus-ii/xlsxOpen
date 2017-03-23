@@ -21,21 +21,7 @@ namespace XMLopen
 				Console.Write(String.Concat(i, "-", XlsxHelper.GetColumnLetter(i), " "));
 			}
 
-			//using (Stream fs = GetStream(@"C:\MyTempXls\cla2.xlsx"))
-			//{
-			//	var x=new XlsxReader(fs);
-			//	var ghjkl=x.Book.WriteSheets();
-				
-			//	CopyStream(ghjkl, @"C:\MyTempXls\cla477.xlsx");
-			//	ghjkl.Close();
-			//}
-			//using (Stream fs = GetStream(@"C:\MyTempXls\cla477.xlsx"))
-			//{
-			//	var x = new XlsxReader(fs);
-			//	var ghjkl = x.Book.WriteSheets();
-			//	CopyStream(ghjkl, @"C:\MyTempXls\cla477.xlsx");
-			//	ghjkl.Close();
-			//}
+			
 			MicroWorkbook mock = GetMockBook();
 			var stream = mock.WriteSheets();
 			string mockname = GetMockName();
@@ -95,6 +81,14 @@ namespace XMLopen
 			a.AddCell(e);
 			a.AddCell(r);
 			result.Sheets.Add(a);
+
+			List<MicroCell> lis=new List<MicroCell>();
+			for (int z = 5; z < 1800; z++)
+			{
+				var nnn=new MicroCell(z.ToString(),"B","hjghghjg");
+				lis.Add(nnn);
+			}
+			a.AddCellList(lis);
 
 			a.CheckList.Add(new DataCheckInfo(qq, ee, "s", q));
 			a.CheckList.Add(new DataCheckInfo(qq, ee, "s", w));
