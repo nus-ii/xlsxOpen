@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,10 +13,10 @@ namespace XlsxMicroAdapter
 		public string Name { get; set; }
 
 		private Dictionary<string,MicroCell> Cells { get; set; }
-
+		private Dictionary<string, List<MicroCell>> CellPacksSortedByRow;
 		public bool Visible { get; set; }
 
-		private List<string> RowsList;
+		private List<int> RowsList;
 		private List<string> ColumnsList;
 
 		public List<DataCheckInfo> CheckList;
@@ -24,7 +25,23 @@ namespace XlsxMicroAdapter
 		{
 			get
 			{
-				FixColumnListAndRowList();
+				FixRowList();
+
+				var result = new List<string>();
+
+				foreach (var r in RowsList)
+				{
+					result.Add(r.ToString());
+				}
+				return result;
+			}
+		}
+
+		public List<int> RowsInt
+		{
+			get
+			{
+				FixRowList();
 				return RowsList;
 			}
 		}
@@ -33,7 +50,7 @@ namespace XlsxMicroAdapter
 		{
 			get
 			{
-				FixColumnListAndRowList();
+				FixColumnList();
 				return ColumnsList;
 			}
 		}
@@ -49,13 +66,14 @@ namespace XlsxMicroAdapter
 			this.Cells = new Dictionary<string, MicroCell>();
 			this.Visible = visible;
 			this.ColumnsList=new List<string>();
-			this.RowsList=new List<string>();
+			this.RowsList=new List<int>();
 			this.CheckList=new List<DataCheckInfo>();
-
+			//this.CellPacksSortedByRow=new Dictionary<string, List<MicroCell>>();
 		}
 
 		public void AddCell(MicroCell newCell)
 		{
+
 			this.Cells.Add(string.Concat(newCell.Column,newCell.Row),newCell);
 		}
 
@@ -66,10 +84,28 @@ namespace XlsxMicroAdapter
 				if (!ColumnsList.Contains(cell.Value.Column))
 					ColumnsList.Add(cell.Value.Column);
 
-				if (!RowsList.Contains(cell.Value.Row))
-					RowsList.Add(cell.Value.Row);
+				if (!RowsList.Contains(cell.Value.RowInt))
+					RowsList.Add(cell.Value.RowInt);
 			}
 
+		}
+
+		private void FixRowList()
+		{
+			foreach (var cell in this.Cells)
+			{
+				if (!RowsList.Contains(cell.Value.RowInt))
+					RowsList.Add(cell.Value.RowInt);
+			}
+		}
+
+		private void FixColumnList()
+		{
+			foreach (var cell in this.Cells)
+			{
+				if (!ColumnsList.Contains(cell.Value.Column))
+					ColumnsList.Add(cell.Value.Column);
+			}
 		}
 
 		public void AddCellList(List<MicroCell> CellList)
@@ -100,6 +136,26 @@ namespace XlsxMicroAdapter
 			foreach (var cell in preResult)
 			{
 				result.Add(cell.Value);
+			}
+			return result;
+		}
+
+		public Dictionary<int,List<MicroCell>> GetCellPacksSortedByRow()
+		{
+			var result=new Dictionary<int,List<MicroCell>>();
+			foreach (var cell in this.Cells)
+			{
+				var t = result.FirstOrDefault(cp => cp.Key == cell.Value.RowInt).Value;
+				if (t!=null)
+				{
+					t.Add(cell.Value);
+				}
+				else
+				{
+					var nl = new List<MicroCell>();
+					nl.Add(cell.Value);
+					result.Add(cell.Value.RowInt,nl);
+				}
 			}
 			return result;
 		}
@@ -153,6 +209,11 @@ namespace XlsxMicroAdapter
 		public override string ToString()
 		{
 			return Name;
+		}
+
+		public Dictionary<string, MicroCell> GetAllCells()
+		{
+			return this.Cells;
 		}
 	}
 }

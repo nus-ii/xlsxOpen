@@ -20,14 +20,13 @@ namespace XMLopen
 			{
 				Console.Write(String.Concat(i, "-", XlsxHelper.GetColumnLetter(i), " "));
 			}
-
 			
 			MicroWorkbook mock = GetMockBook();
 			var stream = mock.WriteSheets();
 			string mockname = GetMockName();
 			CopyStream(stream, mockname);
 			Console.WriteLine(mockname);
-
+			Console.ReadLine();
 			using (Stream fs = GetStream(mockname))
 			{
 				var x = new XlsxReader(fs);
@@ -83,10 +82,11 @@ namespace XMLopen
 			result.Sheets.Add(a);
 
 			List<MicroCell> lis=new List<MicroCell>();
-			for (int z = 5; z < 1800; z++)
+			for (int z = 5; z < 2000; z++)
 			{
-				var nnn=new MicroCell(z.ToString(),"B","hjghghjg");
+				var nnn=new MicroCell(z.ToString(),"B","testA");
 				lis.Add(nnn);
+				a.CheckList.Add(new DataCheckInfo(qq, ee, "s", nnn));
 			}
 			a.AddCellList(lis);
 

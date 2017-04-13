@@ -148,14 +148,13 @@ namespace XlsxMicroAdapter
 		{
 			try
 			{
-				Stream ghjStream =new MemoryStream();
-				using (SpreadsheetDocument myDoc = SpreadsheetDocument.Create(ghjStream, SpreadsheetDocumentType.Workbook))
+				Stream targetStream =new MemoryStream();
+				using (SpreadsheetDocument myDoc = SpreadsheetDocument.Create(targetStream, SpreadsheetDocumentType.Workbook))
 				{
 					CreateParts(myDoc,this.Sheets);
 				}
-
 				//SetActiveSheetByMem(ghjStream);
-			return ghjStream;
+			return targetStream;
 			}
 			catch (Exception e)
 			{
@@ -195,28 +194,21 @@ namespace XlsxMicroAdapter
 
 		private void CreateParts(SpreadsheetDocument myDoc, List<MicroSheet> sheets)
 		{
-			WorkbookPart workbookPart1 = myDoc.AddWorkbookPart();
-			GenerateWorkbookPart1Content(workbookPart1,sheets);
+			WorkbookPart workbookPart = myDoc.AddWorkbookPart();
+			GenerateWorkbookPartContent(workbookPart,sheets);
 
 			int i = 1;
 			foreach (var s in sheets)
 			{
-				WorksheetPart worksheetPart1 = workbookPart1.AddNewPart<WorksheetPart>(string.Format("rId{0}",i));
-				GenerateWorksheetPart1Content(worksheetPart1,s);
+				WorksheetPart worksheetPart = workbookPart.AddNewPart<WorksheetPart>(string.Format("rId{0}",i));
+				GenerateWorksheetPartContent(worksheetPart,s);
 				i++;
 			}
-
 			//SetActiveSheet(workbookPart1);
-
 		}
 
 		private void SetActiveSheet(WorkbookPart workbookPart1)
 		{
-			//foreach (OpenXmlElement oxe in workbookPart1.Workbook.Sheets.ChildElements)
-			//{
-			//	//throw new NotImplementedException();
-			//}
-
 			WorkbookView wv = workbookPart1.Workbook.BookViews.ChildElements.First<WorkbookView>();
 
 			if (wv != null)
@@ -273,8 +265,6 @@ namespace XlsxMicroAdapter
 
 			worksheetExtension.Append(dataValidations);
 			worksheetExtensionList.Append(worksheetExtension);
-			//ws.Append(worksheetExtensionList);
-			//ws.Save();
 		}
 
 		private string GetCheckFormula(DataCheckInfo info)
@@ -283,66 +273,64 @@ namespace XlsxMicroAdapter
 			return string.Format("{0}!${3}${4}:${1}${2}",info.SourceSheetName,info.SourceTopLeft.Column,info.SourceTopLeft.Row,info.SourceBottomRight.Column,info.SourceBottomRight.Row);
 		}
 
-		private void GenerateWorksheetPart1Content(WorksheetPart worksheetPart1, MicroSheet microSheet)
+		private void GenerateWorksheetPartContent(WorksheetPart worksheetPart, MicroSheet microSheet)
 		{
-			Worksheet worksheet1 = new Worksheet();
-			SheetData sheetData1 = new SheetData();
-			var rows = microSheet.Rows;
-			foreach (var r in rows)
-			{
-				Row row1 = new Row();
-
-				var targetCells = microSheet.GetCellsWhereRow(r);
-				foreach (var tc in targetCells)
-				{
-					Cell cell1 = new Cell() { CellReference = string.Concat(tc.Column,tc.Row), DataType = CellValues.InlineString };
-					InlineString inlineString1 = new InlineString();
-					Text text1 = new Text();
-					text1.Text = tc.ViewValue;
-					inlineString1.Append(text1);
+			Worksheet worksheet = new Worksheet();
+			SheetData sheetData = new SheetData();
 		
+			var xlsxRows = new Dictionary<int, Row>();
+			var microRows = microSheet.RowsInt;
+			var allCells = microSheet.GetAllCells();
 
-					if (!string.IsNullOrEmpty(tc.FormulaValue))
-					{
-						//cell1.Append(inlineString1);
-						cell1.CellFormula = new CellFormula(tc.FormulaValue);
-					}
-					else
-					{
-						cell1.Append(inlineString1);
-					}
-					row1.Append(cell1);
-				}
-				sheetData1.Append(row1);
+			foreach (var microRow in microRows)
+			{
+				xlsxRows.Add(microRow,new Row());
 			}
-		   
 			
-			worksheet1.Append(sheetData1);
-			SetDataCheckArray(worksheet1,microSheet);
-			//SetDataCheck(worksheet1);
-			worksheetPart1.Worksheet = worksheet1;
-			
+			foreach (var c in allCells)
+			{
+				var targetRow = xlsxRows[c.Value.RowInt];
+				targetRow.Append(MicroCellToXlsxCell(c.Value));
+			}
+
+			foreach (var xlsxRow in xlsxRows)
+			{
+				sheetData.Append(xlsxRow.Value);
+			}
+
+			worksheet.Append(sheetData);
+			SetDataCheckArray(worksheet,microSheet);
+			worksheetPart.Worksheet = worksheet;
 		}
 
-		//private void SetDataCheckArray(Worksheet worksheet1, MicroSheet microSheet)
-		//{
-		//	foreach (var checkDataItem in microSheet.CheckList)
-		//	{
-		//		SetDataCheck(worksheet1,checkDataItem);
-		//	}
-		//}
-
-		private void GenerateWorkbookPart1Content(WorkbookPart workbookPart1, List<MicroSheet> sheets)
+		private static Cell MicroCellToXlsxCell(MicroCell microCell)
 		{
-			Workbook workbook1 = new Workbook();
-			workbook1.AddNamespaceDeclaration("r", "http://schemas.openxmlformats.org/officeDocument/2006/relationships");
+			Cell cell1 = new Cell() {CellReference = string.Concat(microCell.Column, microCell.Row), DataType = CellValues.InlineString};
+			InlineString inlineString1 = new InlineString();
+			Text text1 = new Text();
+			text1.Text = microCell.ViewValue;
+			inlineString1.Append(text1);
 
+			if (!string.IsNullOrEmpty(microCell.FormulaValue))
+			{
+				cell1.CellFormula = new CellFormula(microCell.FormulaValue);
+			}
+			else
+			{
+				cell1.Append(inlineString1);
+			}
+			return cell1;
+		}
+
+		private void GenerateWorkbookPartContent(WorkbookPart workbookPart1, List<MicroSheet> sheets)
+		{
+			Workbook workbook = new Workbook();
+			workbook.AddNamespaceDeclaration("r", "http://schemas.openxmlformats.org/officeDocument/2006/relationships");
 			Sheets sheets1 = new Sheets();
 
 			uint i = 1;
 			foreach (var s in sheets)
 			{
-				
 				Sheet sheet1 = new Sheet() { Name = s.Name, SheetId = i, Id = string.Format("rId{0}",i)};
 
 				if (!s.Visible)
@@ -351,9 +339,8 @@ namespace XlsxMicroAdapter
 				sheets1.Append(sheet1);
 				i++;
 			}
-
-			workbook1.Append(sheets1);
-			workbookPart1.Workbook = workbook1;
+			workbook.Append(sheets1);
+			workbookPart1.Workbook = workbook;
 		}
 	}//end of class
 
