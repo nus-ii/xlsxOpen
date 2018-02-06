@@ -18,7 +18,7 @@ namespace XMLopen
 		{
 			for (int i = 1; i < 650; i++)
 			{
-				Console.Write(String.Concat(i, "-", XlsxHelper.GetColumnLetter(i), " "));
+				Console.WriteLine(String.Concat(i, "-", XlsxHelper.GetColumnLetter(i), " "));
 			}
 			
 			MicroWorkbook mock = GetMockBook();
@@ -35,9 +35,9 @@ namespace XMLopen
 				CopyStream(ghjkl, @"C:\MyTempXls\momo.xlsx");
 				ghjkl.Close();
 			}
-
 			Console.WriteLine("You can edit momo");
 			Console.ReadLine();
+
 			using (Stream fs = GetStream(@"C:\MyTempXls\momo.xlsx"))
 			{
 				var x = new XlsxReader(fs);
