@@ -7,14 +7,10 @@ using System.Threading.Tasks;
 
 namespace XlsxMicroAdapter
 {
-	public class XlsxHelper
-	{
-		private static string[] alph = new string[]{
-			"A","B","C","D","E","F","G","H","I","J","K","L","M",
-			"N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
-
-		public static string GetColumnLetter(int columnNumber)
-		{
+    public class XlsxHelper
+    {
+        public static string GetColumnLetter(int columnNumber)
+        {
             int dividend = columnNumber;
             string columnName = String.Empty;
             int modulo;
@@ -28,5 +24,5 @@ namespace XlsxMicroAdapter
 
             return columnName;
         }
-	}
+    }
 }
