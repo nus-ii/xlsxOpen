@@ -13,33 +13,20 @@ namespace XlsxMicroAdapter
 			"A","B","C","D","E","F","G","H","I","J","K","L","M",
 			"N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
 
-		public static string GetColumnLetter(int i)
+		public static string GetColumnLetter(int columnNumber)
 		{
-			if(i>700)
-				throw new ArgumentException("");
+            int dividend = columnNumber;
+            string columnName = String.Empty;
+            int modulo;
 
-			string result = "";
-			
-			if (i <= alph.Length)
-			{
-				result = alph.ElementAt(i - 1);
-			}
-			else
-			{
-				int n = i / alph.Length;
-				int y = i % alph.Length;
+            while (dividend > 0)
+            {
+                modulo = (dividend - 1) % 26;
+                columnName = Convert.ToChar(65 + modulo).ToString() + columnName;
+                dividend = (int)((dividend - modulo) / 26);
+            }
 
-				if (y == 0)
-				{
-					y = alph.Length;
-					n = n - 1;
-				}
-
-				result = string.Concat(alph.ElementAt(n - 1), alph.ElementAt(y - 1));
-
-			}
-
-			return result;
-		}
+            return columnName;
+        }
 	}
 }

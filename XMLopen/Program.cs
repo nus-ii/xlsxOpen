@@ -16,7 +16,7 @@ namespace XMLopen
 	{
 		static void Main(string[] args)
 		{
-			for (int i = 1; i < 650; i++)
+			for (int i = 1; i < 710; i++)
 			{
 				Console.WriteLine(String.Concat(i, "-", XlsxHelper.GetColumnLetter(i), " "));
 			}
