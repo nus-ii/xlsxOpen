@@ -4,6 +4,8 @@
 
 **/bin/*
 **/obj/*
+*.psess
+*.vsp
 
 packages
 

@@ -36,14 +36,10 @@ namespace XlsxMicroAdapter
 			var sheets = new List<MicroSheet>();
 			try
 			{
-				//var r = XlsxReader(targetStream);
-			
+				
 				using (SpreadsheetDocument doc = SpreadsheetDocument.Open(targetStream, true))
 				{
-					WorkbookPart workbookPart = doc.WorkbookPart;
-					//var t = workbookPart.WorksheetParts.First().Worksheet.ChildElements.FirstOrDefault(c=>c.LocalName=="sheetData").ChildElements.FirstOrDefault().ChildElements;
-					//SharedStringTablePart sstpart = new SharedStringTablePart();
-					//SharedStringTable sst = sstpart.SharedStringTable;
+					WorkbookPart workbookPart = doc.WorkbookPart;					
 					var u = workbookPart.GetPartsOfType<SharedStringTablePart>();
 					if (u != null &&u.Count() != 0)
 					{
@@ -55,14 +51,9 @@ namespace XlsxMicroAdapter
 					{
 						SharedStringTable sst = new SharedStringTable();
 						GetValue(workbookPart, sst, sheets, false);
-					}
-					//SharedStringTable sst = new SharedStringTable();
-					
+					}				
 				}
 				return sheets;
-		
-
-				//	return null;
 			}
 			catch (Exception e)
 			{

@@ -35,16 +35,54 @@ namespace XMLopen
             //Console.ReadLine(); 
             #endregion
 
-            using (Stream fs = GetStream(@"C:\MyTempXls\momo.xlsx"))
+
+            //List<string> mockData = new List<string>();
+            //mockData.Add("Part1;Part2;Part3;Part4;Part5;Part6;Part7;Part8;Part9;Part10;");
+
+            //for (int i = 0; i < 1000; i++)
+            //{
+            //    var ga = Guid.NewGuid().ToString().Split('-');
+            //    var gb = Guid.NewGuid().ToString().Split('-');
+
+            //    mockData.Add(string.Format("{1};{2};{3};{4};{5};{6};{7};{8};{9};{10};", ga[0], ga[1], ga[2], ga[3], ga[4], gb[0], gb[1], gb[2], gb[3], gb[4], gb[4]));
+
+            //}
+
+            //File.WriteAllLines(@"C:\MyTempXls\megamock1000.csv", mockData.ToArray());
+
+            using (Stream fs = GetStream(@"C:\MyTempXls\megamock1000.xlsx"))
             {
                 var x = new XlsxReader(fs);
-                var y = x.Book.Sheets.FirstOrDefault().HeadersDictionary;
-                var columns = x.Book.Sheets.FirstOrDefault();
-                var tempReader = x.Book.WriteSheets();
+                //var y = x.Book.Sheets.FirstOrDefault().HeadersDictionary;
+                //var r = x.Book.Sheets.FirstOrDefault().GetCellsWhereRow("2");
+                //var targetCell = x.Book.Sheets.FirstOrDefault().GetCellByHeader(2, "Part1").ViewValue;
 
-                CopyStream(tempReader, @"C:\MyTempXls\momo2.xlsx");
-                tempReader.Close();
+
+                List<List<string>> readResult = new List<List<string>>();
+                var tarS = x.Book.Sheets.FirstOrDefault();
+                var tarR = tarS.RowsInt;
+                var tarH = tarS.HeadersDictionary;
+
+                foreach (var tr in tarR)
+                {
+                    List<string> tempL = new List<string>();
+                    foreach (var th in tarH)
+                    {
+                        tempL.Add(tarS.GetCellByHeader(tr, th.Value).ViewValue);
+                    }
+                    readResult.Add(tempL);
+                }
+
+                //var columns = x.Book.Sheets.FirstOrDefault();
+                //var tempReader = x.Book.WriteSheets();
+
+                //CopyStream(tempReader, @"C:\MyTempXls\momo2.xlsx");
+                //tempReader.Close();
+                Console.WriteLine("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
             }
+
+           
+
             Console.ReadLine();
         }
 

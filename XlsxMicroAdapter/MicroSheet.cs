@@ -12,11 +12,29 @@ namespace XlsxMicroAdapter
     {
         public string Name { get; set; }
 
+        private bool Inited;
+
         private Dictionary<string, MicroCell> Cells { get; set; }
-        private Dictionary<string, List<MicroCell>> CellPacksSortedByRow;
+
+        //public Dictionary<int, List<MicroCell>> CellPacksSortedByRow
+        //{
+        //    get
+        //    {
+        //        if (!Inited)
+        //            Init();
+
+        //        return CellPacksSortedByRowValue;
+        //    }
+        //}
+
+        private Hashtable CellPacksSortedByRowHash;
+
+       // private Dictionary<int, List<MicroCell>> CellPacksSortedByRowValue;
+
         public bool Visible { get; set; }
 
         private List<int> RowsList;
+
         private List<string> ColumnsList;
 
         public List<DataCheckInfo> CheckList;
@@ -25,7 +43,8 @@ namespace XlsxMicroAdapter
         {
             get
             {
-                FixRowList();
+                if (!Inited)
+                    Init();
 
                 var result = new List<string>();
 
@@ -41,7 +60,9 @@ namespace XlsxMicroAdapter
         {
             get
             {
-                FixRowList();
+                if (!Inited)
+                    Init();
+
                 return RowsList;
             }
         }
@@ -50,7 +71,9 @@ namespace XlsxMicroAdapter
         {
             get
             {
-                FixColumnList();
+                if (!Inited)
+                    Init();
+
                 return ColumnsList;
             }
         }
@@ -59,10 +82,15 @@ namespace XlsxMicroAdapter
         {
             get
             {
-                FixColumnList();
-                return GetHeadersDictionary();
+                if (!Inited)
+                    Init();
+
+                return HeadersDictionaryValue;
             }
         }
+
+        private Dictionary<string, string> HeadersDictionaryValue;
+
 
         public MicroSheet(string name = "", bool visible = true)
         {
@@ -72,13 +100,21 @@ namespace XlsxMicroAdapter
             this.ColumnsList = new List<string>();
             this.RowsList = new List<int>();
             this.CheckList = new List<DataCheckInfo>();
-            //this.CellPacksSortedByRow=new Dictionary<string, List<MicroCell>>();
         }
 
         public void AddCell(MicroCell newCell)
         {
-
             this.Cells.Add(string.Concat(newCell.Column, newCell.Row), newCell);
+            this.Inited = false;
+        }
+
+        private void Init()
+        {
+            FixColumnListAndRowList();
+           //CellPacksSortedByRowValue = 
+            HeadersDictionaryValue = GetHeadersDictionary();
+            this.CellPacksSortedByRowHash = GetCellPacksSortedByRow();
+            Inited = true;
         }
 
         private void FixColumnListAndRowList()
@@ -118,6 +154,7 @@ namespace XlsxMicroAdapter
             {
                 this.AddCell(cell);
             }
+            Inited = false;
         }
 
         public List<MicroCell> GetCellsWhereRow(string row)
@@ -144,47 +181,28 @@ namespace XlsxMicroAdapter
             return result;
         }
 
-        public Dictionary<int, List<MicroCell>> GetCellPacksSortedByRow()
+        public Hashtable GetCellPacksSortedByRow()
         {
             var result = new Dictionary<int, List<MicroCell>>();
+            Hashtable rr = new Hashtable(result);
             foreach (var cell in this.Cells)
             {
-                var t = result.FirstOrDefault(cp => cp.Key == cell.Value.RowInt).Value;
-                if (t != null)
+               // var t = result.FirstOrDefault(cp => cp.Key == cell.Value.RowInt).Value;
+                if (rr.ContainsKey(cell.Value.RowInt))
                 {
+                    var t = (List<MicroCell>)rr[cell.Value.RowInt];
                     t.Add(cell.Value);
                 }
                 else
                 {
                     var nl = new List<MicroCell>();
                     nl.Add(cell.Value);
-                    result.Add(cell.Value.RowInt, nl);
+                    rr.Add(cell.Value.RowInt, nl);
                 }
             }
-            return result;
+            return rr;
         }
 
-        public List<string> GetColumns()
-        {
-            var result = new List<string>();
-            foreach (var cell in Cells)
-            {
-                if (result.Count == 0 || !result.Contains(cell.Value.Column))
-                    result.Add(cell.Value.Column);
-            }
-            return result;
-        }
-
-        public List<string> GetRows()
-        {
-            var result = new List<string>();
-            foreach (var cell in Cells)
-            {
-                if (result.Count == 0 || !result.Contains(cell.Value.Row))
-                    result.Add(cell.Value.Row);
-            }
-            return result;
-        }
 
         /// <summary>
         /// Возвращает запрошенную ячейку
@@ -197,6 +215,42 @@ namespace XlsxMicroAdapter
             string adress = string.Concat(column, row);
             MicroCell result = new MicroCell();
             Cells.TryGetValue(adress, out result);
+            return result;
+        }
+
+        public MicroCell GetCellByHeader(string rowHeader, string Header)
+        {
+            int rowHeaderInt;
+
+            if (!int.TryParse(rowHeader, out rowHeaderInt))
+                throw new ArgumentException(string.Format("Row number {0} not digit", rowHeader));
+
+            return GetCellByHeader(rowHeaderInt, Header);
+        }
+
+
+        public MicroCell GetCellByHeader(int rowHeaderInt, string Header)
+        {
+            var headers = this.HeadersDictionary;
+            var targetHeader = headers.FirstOrDefault(h => h.Value == Header);
+
+            //TODO:Есть ощущение что это плохая проверка
+            if (targetHeader.Key == null && targetHeader.Value == null)
+                throw new ArgumentOutOfRangeException(string.Format("Header {0} not exist in list {1}", Header, this.Name));
+
+            var rows = this.RowsInt;          
+
+            if (!rows.Contains(rowHeaderInt))
+                throw new ArgumentOutOfRangeException(string.Format("Row {0} not exist in list {1}", rowHeaderInt, this.Name));
+
+            ///------
+            var targetRow = (List<MicroCell>)CellPacksSortedByRowHash[rowHeaderInt];//this.CellPacksSortedByRow.First(r => r.Key == rowHeaderInt).Value;
+
+            var result = targetRow.FirstOrDefault(c => c.Column == targetHeader.Key);
+
+            if (result == null)
+                throw new Exception(string.Format("Cell with header {0} not exist in row {1}", Header, rowHeaderInt));
+
             return result;
         }
 
