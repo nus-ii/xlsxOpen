@@ -8,28 +8,30 @@ using DocumentFormat.OpenXml.Wordprocessing;
 
 namespace XlsxMicroAdapter
 {
-    public class MicroSheet
+    public class MicroSheet:IDisposable
     {
         public string Name { get; set; }
 
         private bool Inited;
 
-        private Dictionary<string, MicroCell> Cells { get; set; }
+        public int HeaderRow
+        {
+            get
+            {
+                return HeaderRowValue;
+            }
+            set
+            {
+                HeaderRowValue = value;
+                Init();                
+            }
+        }
 
-        //public Dictionary<int, List<MicroCell>> CellPacksSortedByRow
-        //{
-        //    get
-        //    {
-        //        if (!Inited)
-        //            Init();
+        private int HeaderRowValue;
 
-        //        return CellPacksSortedByRowValue;
-        //    }
-        //}
+        private Dictionary<string, MicroCell> Cells;
 
         private Hashtable CellPacksSortedByRowHash;
-
-       // private Dictionary<int, List<MicroCell>> CellPacksSortedByRowValue;
 
         public bool Visible { get; set; }
 
@@ -91,7 +93,6 @@ namespace XlsxMicroAdapter
 
         private Dictionary<string, string> HeadersDictionaryValue;
 
-
         public MicroSheet(string name = "", bool visible = true)
         {
             this.Name = name;
@@ -100,6 +101,7 @@ namespace XlsxMicroAdapter
             this.ColumnsList = new List<string>();
             this.RowsList = new List<int>();
             this.CheckList = new List<DataCheckInfo>();
+            this.HeaderRowValue = 1;
         }
 
         public void AddCell(MicroCell newCell)
@@ -111,7 +113,6 @@ namespace XlsxMicroAdapter
         private void Init()
         {
             FixColumnListAndRowList();
-           //CellPacksSortedByRowValue = 
             HeadersDictionaryValue = GetHeadersDictionary();
             this.CellPacksSortedByRowHash = GetCellPacksSortedByRow();
             Inited = true;
@@ -183,24 +184,22 @@ namespace XlsxMicroAdapter
 
         public Hashtable GetCellPacksSortedByRow()
         {
-            var result = new Dictionary<int, List<MicroCell>>();
-            Hashtable rr = new Hashtable(result);
+            Hashtable result = new Hashtable(new Dictionary<int, List<MicroCell>>());
             foreach (var cell in this.Cells)
             {
-               // var t = result.FirstOrDefault(cp => cp.Key == cell.Value.RowInt).Value;
-                if (rr.ContainsKey(cell.Value.RowInt))
+                if (result.ContainsKey(cell.Value.RowInt))
                 {
-                    var t = (List<MicroCell>)rr[cell.Value.RowInt];
+                    var t = (List<MicroCell>)result[cell.Value.RowInt];
                     t.Add(cell.Value);
                 }
                 else
                 {
                     var nl = new List<MicroCell>();
                     nl.Add(cell.Value);
-                    rr.Add(cell.Value.RowInt, nl);
+                    result.Add(cell.Value.RowInt, nl);
                 }
             }
-            return rr;
+            return result;
         }
 
 
@@ -238,13 +237,12 @@ namespace XlsxMicroAdapter
             if (targetHeader.Key == null && targetHeader.Value == null)
                 throw new ArgumentOutOfRangeException(string.Format("Header {0} not exist in list {1}", Header, this.Name));
 
-            var rows = this.RowsInt;          
+            var rows = this.RowsInt;
 
             if (!rows.Contains(rowHeaderInt))
                 throw new ArgumentOutOfRangeException(string.Format("Row {0} not exist in list {1}", rowHeaderInt, this.Name));
 
-            ///------
-            var targetRow = (List<MicroCell>)CellPacksSortedByRowHash[rowHeaderInt];//this.CellPacksSortedByRow.First(r => r.Key == rowHeaderInt).Value;
+            var targetRow = (List<MicroCell>)CellPacksSortedByRowHash[rowHeaderInt];
 
             var result = targetRow.FirstOrDefault(c => c.Column == targetHeader.Key);
 
@@ -259,7 +257,7 @@ namespace XlsxMicroAdapter
             var result = new Dictionary<string, string>();
             foreach (var column in this.ColumnsList)
             {
-                result.Add(column, GetCell("1", column).ViewValue);
+                result.Add(column, GetCell(HeaderRowValue.ToString(), column).ViewValue);
             }
             return result;
         }
@@ -272,6 +270,16 @@ namespace XlsxMicroAdapter
         public Dictionary<string, MicroCell> GetAllCells()
         {
             return this.Cells;
+        }
+
+        public void Dispose()
+        {
+            Cells = null;
+            //foreach(var c in Cells)
+            //{
+            //    c.Value.Dispose();             
+            //}         
+            
         }
     }
 }

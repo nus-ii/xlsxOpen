@@ -50,15 +50,27 @@ namespace XMLopen
 
             //File.WriteAllLines(@"C:\MyTempXls\megamock1000.csv", mockData.ToArray());
 
+
+            ReadList();
+            System.GC.Collect();
+
+            Console.WriteLine("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+            Console.ReadLine();
+        }
+
+        private static string GetMockName()
+        {
+            var n = DateTime.Now;
+            string dt = string.Format("{0}-{1}-{2}", n.Hour, n.Minute, n.Second);
+            return string.Concat(@"C:\MyTempXls\mock", dt, ".xlsx");
+        }
+
+        private static List<List<string>> ReadList()
+        {
+            List<List<string>> readResult = new List<List<string>>();
             using (Stream fs = GetStream(@"C:\MyTempXls\megamock1000.xlsx"))
             {
-                var x = new XlsxReader(fs);
-                //var y = x.Book.Sheets.FirstOrDefault().HeadersDictionary;
-                //var r = x.Book.Sheets.FirstOrDefault().GetCellsWhereRow("2");
-                //var targetCell = x.Book.Sheets.FirstOrDefault().GetCellByHeader(2, "Part1").ViewValue;
-
-
-                List<List<string>> readResult = new List<List<string>>();
+                var x = new XlsxReader(fs);               
                 var tarS = x.Book.Sheets.FirstOrDefault();
                 var tarR = tarS.RowsInt;
                 var tarH = tarS.HeadersDictionary;
@@ -72,25 +84,9 @@ namespace XMLopen
                     }
                     readResult.Add(tempL);
                 }
-
-                //var columns = x.Book.Sheets.FirstOrDefault();
-                //var tempReader = x.Book.WriteSheets();
-
-                //CopyStream(tempReader, @"C:\MyTempXls\momo2.xlsx");
-                //tempReader.Close();
-                Console.WriteLine("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+                x.Dispose();
             }
-
-           
-
-            Console.ReadLine();
-        }
-
-        private static string GetMockName()
-        {
-            var n = DateTime.Now;
-            string dt = string.Format("{0}-{1}-{2}", n.Hour, n.Minute, n.Second);
-            return string.Concat(@"C:\MyTempXls\mock", dt, ".xlsx");
+            return readResult;
         }
 
         private static MicroWorkbook GetMockBook()

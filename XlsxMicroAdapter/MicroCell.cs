@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace XlsxMicroAdapter
 {
-	public class MicroCell
+	public class MicroCell:IDisposable
 	{
 		public string Row {
 			get
@@ -24,11 +24,11 @@ namespace XlsxMicroAdapter
 			set { this.RowValue = value; }
 		}
 
-		public string Column { get; set; }
+        public string Column;
 
-		public string ViewValue { get; set; }
+        public string ViewValue;
 
-		public string FormulaValue { get; set; }
+        public string FormulaValue;
 
 
 		public MicroCell(string row, string column, string viewValue = "", string formula = "")
@@ -57,5 +57,12 @@ namespace XlsxMicroAdapter
 		{
 			return string.Concat(this.Column, this.Row);
 		}
-	}
+
+        public void Dispose()
+        {
+            Column = null;
+            ViewValue = null;
+            FormulaValue = null;          
+        }
+    }
 }

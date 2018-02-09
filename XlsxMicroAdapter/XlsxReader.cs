@@ -10,7 +10,7 @@ using Newtonsoft.Json.Linq;
 
 namespace XlsxMicroAdapter
 {
-	public class XlsxReader
+	public class XlsxReader:IDisposable
 	{
 		public Stream targetStream { get; set; }
 
@@ -33,7 +33,12 @@ namespace XlsxMicroAdapter
 			this.Book.Sheets.Add(newList);
 		}
 
-	}
+        public void Dispose()
+        {
+            Book.Dispose();
+            targetStream.Dispose();
+        }
+    }
 
 }//end of name space
 
