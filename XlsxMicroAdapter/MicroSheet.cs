@@ -274,12 +274,11 @@ namespace XlsxMicroAdapter
 
         public void Dispose()
         {
-            Cells = null;
-            //foreach(var c in Cells)
-            //{
-            //    c.Value.Dispose();             
-            //}         
-            
+            foreach (var c in Cells)
+            {
+                c.Value.Dispose();
+            }
+
         }
     }
 }

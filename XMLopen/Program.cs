@@ -70,7 +70,7 @@ namespace XMLopen
             List<List<string>> readResult = new List<List<string>>();
             using (Stream fs = GetStream(@"C:\MyTempXls\megamock1000.xlsx"))
             {
-                var x = new XlsxReader(fs);               
+                var x = new XlsxReader(fs);
                 var tarS = x.Book.Sheets.FirstOrDefault();
                 var tarR = tarS.RowsInt;
                 var tarH = tarS.HeadersDictionary;
@@ -84,7 +84,6 @@ namespace XMLopen
                     }
                     readResult.Add(tempL);
                 }
-                x.Dispose();
             }
             return readResult;
         }

@@ -12,7 +12,7 @@ namespace XlsxMicroAdapter
 {
 	public class XlsxReader:IDisposable
 	{
-		public Stream targetStream { get; set; }
+		//public Stream targetStream { get; set; }
 
 		public MicroWorkbook Book { get; set; }
 
@@ -23,8 +23,8 @@ namespace XlsxMicroAdapter
 
 		public XlsxReader(Stream sourceStream)
 		{
-			this.targetStream = sourceStream;
-			this.Book = new MicroWorkbook(this.targetStream);
+			//this.targetStream = sourceStream;
+			this.Book = new MicroWorkbook(sourceStream);
 		}
 
 		public void AddList(string name)
@@ -36,7 +36,13 @@ namespace XlsxMicroAdapter
         public void Dispose()
         {
             Book.Dispose();
-            targetStream.Dispose();
+           // targetStream.Dispose();
+        }
+
+        public static int l(Stream sourceStream)
+        {
+            var Book = new MicroWorkbook(sourceStream);
+            return Book.Sheets.Count;
         }
     }
 
