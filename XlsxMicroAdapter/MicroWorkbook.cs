@@ -3,11 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using DocumentFormat.OpenXml;
-using DocumentFormat.OpenXml.Office2010.ExcelAc;
 using DocumentFormat.OpenXml.Packaging;
 using DocumentFormat.OpenXml.Spreadsheet;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Excel = DocumentFormat.OpenXml.Office.Excel;
 using X14 = DocumentFormat.OpenXml.Office2010.Excel;
 
@@ -19,16 +16,19 @@ namespace XlsxMicroAdapter
 
         public List<MicroSheet> Sheets;
 
-
-        public MicroWorkbook(string name = "")
+        public MicroWorkbook()
         {
-            Name = name;
-            Sheets = new List<MicroSheet>();
+            // this.Sheets = ReadSheets(path);
         }
 
-        public MicroWorkbook(Stream targetStream, string name = "") : this(name)
+        public MicroWorkbook(string path)
         {
-            this.Sheets = ReadSheets(targetStream);
+            Sheets = ReadSheets(path);
+        }
+
+        public MicroWorkbook(string path, string name = "") : this(path)
+        {
+            this.Name = name;
         }
 
         private static List<MicroSheet> ReadSheets(Stream targetStream)
@@ -59,6 +59,37 @@ namespace XlsxMicroAdapter
             {
                 targetStream.Close();
                 throw e;
+            }
+        }
+
+        private static List<MicroSheet> ReadSheets(string path)
+        {
+            var sheets = new List<MicroSheet>();
+            try
+            {
+
+                using (SpreadsheetDocument doc = SpreadsheetDocument.Open(path, false))
+                {
+                    WorkbookPart workbookPart = doc.WorkbookPart;
+                    var u = workbookPart.GetPartsOfType<SharedStringTablePart>();
+                    if (u != null && u.Count() != 0)
+                    {
+                        SharedStringTablePart sstpart = workbookPart.GetPartsOfType<SharedStringTablePart>().First();
+                        SharedStringTable sst = sstpart.SharedStringTable;
+                        GetValue(workbookPart, sst, sheets, true);
+                    }
+                    else
+                    {
+                        SharedStringTable sst = new SharedStringTable();
+                        GetValue(workbookPart, sst, sheets, false);
+                    }
+                }
+                return sheets;
+            }
+            catch (Exception e)
+            {
+                return sheets;
+              //  throw e;
             }
         }
 

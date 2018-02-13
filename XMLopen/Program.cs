@@ -68,9 +68,9 @@ namespace XMLopen
         private static List<List<string>> ReadList()
         {
             List<List<string>> readResult = new List<List<string>>();
-            using (Stream fs = GetStream(@"C:\MyTempXls\megamock1000.xlsx"))
+            using (FileStream fs = new FileStream(@"C:\MyTempXls\megamock10000.xlsx",FileMode.Open))
             {
-                var x = new XlsxReader(fs);
+                var x = new XlsxReader(@"C:\MyTempXls\megamock1000.xlsx");
                 var tarS = x.Book.Sheets.FirstOrDefault();
                 var tarR = tarS.RowsInt;
                 var tarH = tarS.HeadersDictionary;
